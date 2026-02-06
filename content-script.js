@@ -31,7 +31,48 @@ function getPostText(element) {
 }
 
 /**
- * Clear all highlights from the page
+ * Clean text by removing LinkedIn UI elements
+ */
+function cleanText(text) {
+  if (!text) return '';
+  
+  // Remove common LinkedIn UI text patterns
+  let cleaned = text;
+  
+  // Remove user name headers and profile info (flexible 1-5 lines)
+  cleaned = cleaned.replace(/^[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*\n/, ''); // First 5 lines max
+  
+  // Remove "Feed post", "Product at Company | Startup Advisor" style headers
+  cleaned = cleaned.replace(/^Product at.*?\n/, ''); // Remove headline line
+  cleaned = cleaned.replace(/^(.*?\|.*?\|.*?)+\n/, ''); // Remove pipe-separated header lines
+  
+  // Remove "Feed post" and similar UI text
+  cleaned = cleaned.replace(/Feed post/gi, '');
+  
+  // Remove verification badges and status indicators
+  cleaned = cleaned.replace(/•\s*(1st|2nd|3rd|4th|5th|Verified|Promoted|Sponsored)/g, '');
+  
+  // Remove LinkedIn button and action text
+  cleaned = cleaned.replace(/(Like|Comment|Share|Tag|Report|Save)\s+(this\s+post|someone|if|to|now)?/gi, '');
+  cleaned = cleaned.replace(/drop\s+a\s+comment/gi, '');
+  
+  // Remove time indicators (e.g., "1d", "2h", "3w")
+  cleaned = cleaned.replace(/\b\d+[dhw]\b/g, '');
+  
+  // Remove hashtags at the end (they're not slop patterns)
+  cleaned = cleaned.replace(/(?:\s*#[A-Za-z0-9_]+)+$/, '');
+  
+  // Remove empty lines and excessive whitespace
+  cleaned = cleaned.replace(/\n\s*\n/g, '\n');
+  cleaned = cleaned.replace(/^\s+|\s+$/gm, '');
+  cleaned = cleaned.replace(/\s+/g, ' ');
+  cleaned = cleaned.trim();
+  
+  return cleaned;
+}
+
+/**
+ * Clear all highlights from page
  */
 function clearAllHighlights() {
   // Remove highlighted class and inline styles from all elements
@@ -66,10 +107,26 @@ function processPost(post) {
     return;
   }
   
+  // Skip if this is a comment (we only want to analyze main posts)
+  const commentParent = post.closest(
+    '.feed-shared-comment, .comments-comment-item, .comment-content, ' +
+    '.feed-shared-comments, .social-details-article, .comments-list, ' +
+    '.feed-shared-update-v2__commentary'
+  );
+  if (commentParent) {
+    post.setAttribute('data-slop-processed', 'true');
+    return;
+  }
+  
   post.setAttribute('data-slop-processed', 'true');
   
   // Get complete post text
-  const text = getPostText(post);
+  let text = getPostText(post);
+  
+  // Clean text to remove LinkedIn UI elements
+  const originalLength = text.length;
+  text = cleanText(text);
+  const cleanedLength = text.length;
   
   if (text.length < 50) {
     return; // Too short to be slop
@@ -83,7 +140,8 @@ function processPost(post) {
       threshold: CONFIG.slopThreshold,
       confidence: AISlopDetector.getConfidenceLevel(analysis.score),
       patterns: analysis.patterns,
-      textLength: text.length,
+      originalLength: originalLength,
+      cleanedLength: cleanedLength,
       textPreview: text.substring(0, 100) + '...'
     });
   }
@@ -101,7 +159,7 @@ function highlightSlop(element, analysis) {
     return;
   }
   
-  // Find the parent container that wraps the WHOLE post
+  // Find parent container that wraps the WHOLE post
   const parentUpdate = element.closest('.feed-shared-update-v2');
   const parentArticle = element.closest('article');
   const postContainer = parentUpdate || parentArticle || element;
@@ -147,31 +205,49 @@ function processLinkedInPosts() {
     console.log('🔍 Scanning for LinkedIn posts...');
   }
   
-  // LinkedIn post selectors (these may change, so we use multiple)
+  // LinkedIn post selectors - ORDER MATTERS!
+  // Text-only selectors FIRST to avoid analyzing headers, buttons, UI
   const postSelectors = [
-    '.feed-shared-update-v2__description',
-    '.feed-shared-update-v2__commentary',
+    '.feed-shared-update-v2__description',  // Post text content - check FIRST
+    '.feed-shared-text',  // Text elements
     '.feed-shared-inline-show-more-text',  // Individual post pages
-    '.feed-shared-text',
-    'article .update-components-text',
-    '.break-words',
+    'article .update-components-text',  // Component text
+    '.break-words',  // Break word elements
     '[data-test-id="main-feed-activity-card__commentary"]',
-    '.feed-shared-update-v2',  // Full post containers
+    '.feed-shared-update-v2',  // FULL container - check LAST (fallback)
+    'article',  // Article tags - LAST (fallback)
   ];
   
   let totalProcessed = 0;
+  let newlyProcessed = 0;
   
   postSelectors.forEach(selector => {
     const posts = document.querySelectorAll(selector);
     
     posts.forEach(post => {
+      // Skip if already processed by a higher-priority selector
+      if (post.hasAttribute('data-slop-processed')) {
+        return;
+      }
+      
+      // Check if this element is contained within an already-processed post
+      const processedAncestor = post.closest('[data-slop-processed="true"]');
+      if (processedAncestor) {
+        // Mark as processed to avoid duplicate work
+        post.setAttribute('data-slop-processed', 'true');
+        return;
+      }
+      
       processPost(post);
       totalProcessed++;
+      newlyProcessed++;
     });
   });
   
-  if (CONFIG.debugMode && totalProcessed > 0) {
-    console.log(`📝 Found ${totalProcessed} potential posts`);
+  if (CONFIG.debugMode) {
+    if (newlyProcessed > 0) {
+      console.log(`📝 Found ${totalProcessed} potential posts, processed ${newlyProcessed} new ones`);
+    }
   }
 }
 
@@ -237,4 +313,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ highlighted });
   }
 });
-
