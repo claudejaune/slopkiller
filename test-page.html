@@ -170,11 +170,6 @@
       <h4>Buzzwords:</h4>
       <div id="buzzwordsList"></div>
     </div>
-    
-    <div class="herp-derp" id="herpDerp" style="display: none;">
-      <strong>Herp Derp Version:</strong><br>
-      <span id="herpDerpText"></span>
-    </div>
   </div>
   
   <div class="example-posts">
@@ -301,16 +296,9 @@ If you're building in logistics, remember this: innovation doesn't need complexi
       if (isSlop) {
         verdict.textContent = '🚨 AI SLOP DETECTED!';
         verdict.style.color = '#f44336';
-        
-        // Show herp derp
-        const herpDerp = document.getElementById('herpDerp');
-        herpDerp.style.display = 'block';
-        document.getElementById('herpDerpText').textContent = 
-          AISlopDetector.generateHerpDerp(text);
       } else {
         verdict.textContent = '✅ Looks human to me!';
         verdict.style.color = '#4caf50';
-        document.getElementById('herpDerp').style.display = 'none';
       }
       
       // Display patterns

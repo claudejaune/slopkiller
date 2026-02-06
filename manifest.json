@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AI Slop Detector",
   "version": "1.0.0",
-  "description": "Detects and replaces AI-generated LinkedIn slop with 'herp derp' text",
+  "description": "Highlights AI-generated content on LinkedIn to help identify potential AI slop",
   "permissions": [
     "activeTab",
     "storage"

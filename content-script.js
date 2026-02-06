@@ -7,15 +7,13 @@
 const CONFIG = {
   slopThreshold: 30, // Score threshold for detection
   enabled: true,
-  highlightMode: false, // If true, highlights instead of replacing
   debugMode: false, // Log detection info to console
 };
 
 // Load settings from Chrome storage
-chrome.storage.sync.get(['enabled', 'threshold', 'highlightMode'], (result) => {
+chrome.storage.sync.get(['enabled', 'threshold'], (result) => {
   CONFIG.enabled = result.enabled !== false; // Default to true
   CONFIG.slopThreshold = result.threshold || 30;
-  CONFIG.highlightMode = result.highlightMode || false;
 });
 
 /**
@@ -39,48 +37,8 @@ function processTextNode(node) {
   }
   
   if (analysis.score >= CONFIG.slopThreshold) {
-    if (CONFIG.highlightMode) {
-      highlightSlop(node.parentElement, analysis);
-    } else {
-      replaceSlopText(node, text, analysis);
-    }
+    highlightSlop(node.parentElement, analysis);
   }
-}
-
-/**
- * Replace sloppy text with herp derp
- */
-function replaceSlopText(node, originalText, analysis) {
-  const herpDerpText = AISlopDetector.generateHerpDerp(originalText);
-  
-  // Create a replacement element with tooltip showing original
-  const wrapper = document.createElement('span');
-  wrapper.className = 'ai-slop-replaced';
-  wrapper.textContent = herpDerpText;
-  wrapper.style.opacity = '0.6';
-  wrapper.style.fontStyle = 'italic';
-  wrapper.style.cursor = 'help';
-  wrapper.title = `AI Slop detected (score: ${analysis.score})\nClick to see original`;
-  
-  // Store original text
-  wrapper.setAttribute('data-original', originalText);
-  wrapper.setAttribute('data-slop-score', analysis.score);
-  
-  // Add click handler to toggle between herp derp and original
-  wrapper.addEventListener('click', function() {
-    if (this.textContent === herpDerpText) {
-      this.textContent = originalText;
-      this.style.opacity = '1';
-      this.style.backgroundColor = '#fff3cd';
-    } else {
-      this.textContent = herpDerpText;
-      this.style.opacity = '0.6';
-      this.style.backgroundColor = '';
-    }
-  });
-  
-  // Replace the text node with our wrapper
-  node.parentNode.replaceChild(wrapper, node);
 }
 
 /**
@@ -202,7 +160,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'updateSettings') {
     CONFIG.enabled = request.settings.enabled;
     CONFIG.slopThreshold = request.settings.threshold;
-    CONFIG.highlightMode = request.settings.highlightMode;
     
     // Re-process page
     document.querySelectorAll('[data-slop-processed]').forEach(el => {
@@ -212,9 +169,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     sendResponse({ success: true });
   } else if (request.action === 'getStats') {
-    const replaced = document.querySelectorAll('.ai-slop-replaced').length;
     const highlighted = document.querySelectorAll('.ai-slop-highlighted').length;
-    sendResponse({ replaced, highlighted });
+    sendResponse({ highlighted });
   }
 });
 

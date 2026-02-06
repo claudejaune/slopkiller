@@ -193,57 +193,6 @@ const AISlopDetector = {
     if (score >= 30) return 'MEDIUM';
     if (score >= 15) return 'LOW';
     return 'VERY LOW';
-  },
-  
-  /**
-   * Replace slop text with "herp derp"
-   * @param {string} text - Original text
-   * @param {number} threshold - Score threshold
-   * @returns {string} Modified text
-   */
-  replaceSlop(text, threshold = 30) {
-    const analysis = this.analyzeText(text);
-    
-    if (analysis.score < threshold) {
-      return text; // Not sloppy enough, return original
-    }
-    
-    // Replace detected patterns with herp derp variants
-    let modified = text;
-    
-    // Replace the most egregious patterns
-    for (const [name, pattern] of Object.entries(this.patterns)) {
-      if (analysis.patterns[name]) {
-        modified = modified.replace(pattern, 'herp derp. ');
-      }
-    }
-    
-    return modified;
-  },
-  
-  /**
-   * Generate a herp derp replacement of appropriate length
-   * @param {string} original - Original text
-   * @returns {string}
-   */
-  generateHerpDerp(original) {
-    const wordCount = original.split(/\s+/).length;
-    const herpDerpVariants = [
-      'herp derp',
-      'derp herp',
-      'herp de derp',
-      'derpy derp derp',
-      'herp a derp',
-    ];
-    
-    const repetitions = Math.ceil(wordCount / 3);
-    let result = [];
-    
-    for (let i = 0; i < repetitions; i++) {
-      result.push(herpDerpVariants[i % herpDerpVariants.length]);
-    }
-    
-    return result.join('. ') + '.';
   }
 };
 

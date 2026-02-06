@@ -1,17 +1,16 @@
 # AI Slop Detector - Chrome Extension
 
-A Chrome extension that detects and replaces AI-generated "slop" content on LinkedIn with "herp derp" text.
+A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 
 ## Features
 
 - **Pattern Detection**: Uses 18+ regex patterns to detect common AI-generated writing structures
 - **Emoji Detection**: Flags overuse of engagement-bait emojis (🚀✅👇🔥💡📈)
 - **Scoring System**: Assigns a "slop score" to each post based on detected patterns
-- **Two Modes**: 
-  - Replace mode: Converts slop to "herp derp" text
-  - Highlight mode: Just highlights suspicious posts
+- **Visual Highlighting**: Highlights suspicious posts with red background and border
+- **Score Badge**: Shows the slop score on detected posts
 - **Adjustable Sensitivity**: Set your own threshold for detection
-- **Click to Reveal**: Click replaced text to see the original
+- **Real-time Stats**: See how many posts have been highlighted on current page
 
 ## Detected Patterns
 
@@ -81,7 +80,6 @@ ai-slop-detector/
 3. Click the extension icon to:
    - Enable/disable detection
    - Adjust sensitivity threshold (10-100)
-   - Toggle between replace and highlight mode
    - View stats for current page
 
 ### Sensitivity Guide
@@ -101,7 +99,7 @@ ai-slop-detector/
    - Structural flag: 5-15 points
    - Buzzword: 3 points
 4. **Threshold Check** determines if score exceeds your threshold
-5. **Replacement/Highlight** modifies the DOM accordingly
+5. **Visual Highlight** applies red background, border, and badge to detected posts
 
 ## Customization
 
@@ -109,7 +107,6 @@ Edit `ai-slop-detector.js` to:
 - Add new patterns to `patterns` object
 - Adjust point values in `analyzeText()` method
 - Add new buzzwords to `buzzwords` array
-- Modify "herp derp" variants in `generateHerpDerp()`
 
 ## Example Detections
 
@@ -146,10 +143,8 @@ Sometimes performance doesn't need more pressure.
 
 - [ ] Support for Twitter/X
 - [ ] Machine learning model for better detection
-- [ ] Export detected posts to CSV
 - [ ] Whitelist specific authors
 - [ ] Dark mode for popup
-- [ ] Custom "herp derp" replacement text
 - [ ] Browser action badge showing slop count
 
 ## Contributing
