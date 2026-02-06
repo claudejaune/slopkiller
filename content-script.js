@@ -8,12 +8,19 @@ const CONFIG = {
   slopThreshold: 30, // Score threshold for detection
   enabled: true,
   debugMode: false, // Log detection info to console
+  settingsLoaded: false, // Track when settings are loaded
 };
 
 // Load settings from Chrome storage
 chrome.storage.sync.get(['enabled', 'threshold'], (result) => {
   CONFIG.enabled = result.enabled !== false; // Default to true
   CONFIG.slopThreshold = result.threshold || 30;
+  CONFIG.settingsLoaded = true;
+  
+  console.log('⚙️ Settings loaded:', { enabled: CONFIG.enabled, threshold: CONFIG.slopThreshold });
+  
+  // Now initialize - settings are loaded before processing starts
+  initialize();
 });
 
 /**
@@ -174,9 +181,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Start when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initialize);
-} else {
-  initialize();
-}
