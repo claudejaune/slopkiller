@@ -342,4 +342,4 @@ Found a new pattern? Here's the format:
 }
 ```
 
-Submit via pull request or issue on the repository!
+Submit via pull request or issue on the repository.

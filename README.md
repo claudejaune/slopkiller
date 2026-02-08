@@ -2,6 +2,8 @@
 
 A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 
+Currently, as proof of concept/MVP, it only reliably detects slop on the actual post page. Fool-proof slop detection in the main feed is being worked upon as we speak.
+
 ## Features
 
 - **Pattern Detection**: Uses 18+ regex patterns to detect common AI-generated writing structures
@@ -13,6 +15,8 @@ A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 - **Real-time Stats**: See how many posts have been highlighted on current page
 
 ## Detected Patterns
+
+Common telltale signs of AI slop. See [PATTERN_GUIDE.md](PATTERN_GUIDE.md) for implementation details.
 
 ### Core Patterns
 1. **"It's not X, it's Y"** - The classic false dichotomy
@@ -76,7 +80,7 @@ ai-slop-detector/
 ## Usage
 
 1. Navigate to LinkedIn
-2. The extension will automatically scan posts
+2. The extension will automatically scan posts (currently, it only reliably detects slop on post page, in-feed detection WIP)
 3. Click the extension icon to:
    - Enable/disable detection
    - Adjust sensitivity threshold (10-100)
@@ -139,7 +143,7 @@ Sometimes performance doesn't need more pressure.
 - Pattern matching can't detect all AI-generated content
 - Only works on LinkedIn currently (easily adaptable to other sites)
 
-## Future Enhancements
+## Future Enhancements (tentative)
 
 - [ ] Support for Twitter/X
 - [ ] Machine learning model for better detection
@@ -157,4 +161,4 @@ MIT License - Use freely, modify as needed.
 
 ## Disclaimer
 
-This extension is for educational and satirical purposes. It may occasionally flag legitimate human-written content. Use at your own discretion.
+This extension is for educational and satirical purposes. It may occasionally flag legitimate human-written content. Use at your own discretion. Don't show it to your boss or you will get fired.
