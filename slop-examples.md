@@ -1,3 +1,10 @@
+# AI Slop examples
+
+This is the kind of post that qualifies as slop. All the red flags are maked in **bold** text. There are probably others.
+
+
+---
+
 Just wrapped up interviews for a cybersecurity role.
 
 Not a single candidate could explain how the tools they use actually work.
