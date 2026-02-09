@@ -11,6 +11,38 @@ const CONFIG = {
   settingsLoaded: false, // Track when settings are loaded
 };
 
+// Prioritized selectors for main post text blocks.
+// Keep these narrow so we don't accidentally score comment bodies.
+const MAIN_POST_SELECTORS = [
+  '[data-testid="main-feed-activity-card__commentary"]',
+  '[data-test-id="main-feed-activity-card__commentary"]',
+  '[data-testid="expandable-text-box"]',
+  '.feed-shared-update-v2__description',
+  '.feed-shared-text',
+  '.feed-shared-inline-show-more-text',
+  'article .update-components-text',
+  '.update-components-update-v2__commentary',
+  '.update-components-text-view',
+];
+
+const COMMENT_SELECTORS = [
+  '[data-view-name="comment-commentary"]',
+  '[data-view-name="comments-comments-list"]',
+  '[data-view-name="comments-comment-item"]',
+  '[data-testid="comments-comment-box-text"]',
+  '[data-testid="commentary-text"]',
+  '.comments-comment-item',
+  '.comments-comment-item-content',
+  '.comments-comment-entity',
+  '.feed-shared-comment',
+  '.comment-content',
+];
+
+const FEED_CONTAINER_SELECTORS = [
+  '.feed-shared-update-v2',
+  'article',
+];
+
 // Load settings from Chrome storage
 chrome.storage.sync.get(['enabled', 'threshold'], (result) => {
   CONFIG.enabled = result.enabled !== false; // Default to true
@@ -39,15 +71,18 @@ function cleanText(text) {
   // Remove common LinkedIn UI text patterns
   let cleaned = text;
   
-  // Remove user name headers and profile info (flexible 1-5 lines)
-  cleaned = cleaned.replace(/^[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*\n/, ''); // First 5 lines max
-  
   // Remove "Feed post", "Product at Company | Startup Advisor" style headers
   cleaned = cleaned.replace(/^Product at.*?\n/, ''); // Remove headline line
   cleaned = cleaned.replace(/^(.*?\|.*?\|.*?)+\n/, ''); // Remove pipe-separated header lines
   
   // Remove "Feed post" and similar UI text
   cleaned = cleaned.replace(/Feed post/gi, '');
+  
+  // Remove follower counts and visibility info (common in post page headers)
+  cleaned = cleaned.replace(/\d{1,3}(?:,\d{3})*\s*followers?/gi, '');
+  cleaned = cleaned.replace(/Visible to anyone( on or off LinkedIn)?/gi, '');
+  cleaned = cleaned.replace(/Visible to connections only/gi, '');
+  cleaned = cleaned.replace(/Visible to members only/gi, '');
   
   // Remove verification badges and status indicators
   cleaned = cleaned.replace(/•\s*(1st|2nd|3rd|4th|5th|Verified|Promoted|Sponsored)/g, '');
@@ -56,16 +91,21 @@ function cleanText(text) {
   cleaned = cleaned.replace(/(Like|Comment|Share|Tag|Report|Save)\s+(this\s+post|someone|if|to|now)?/gi, '');
   cleaned = cleaned.replace(/drop\s+a\s+comment/gi, '');
   
-  // Remove time indicators (e.g., "1d", "2h", "3w")
+  // Remove time indicators (e.g., "1d", "2h", "3w", "1 week ago")
   cleaned = cleaned.replace(/\b\d+[dhw]\b/g, '');
+  cleaned = cleaned.replace(/\b\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago\b/gi, '');
   
   // Remove hashtags at the end (they're not slop patterns)
   cleaned = cleaned.replace(/(?:\s*#[A-Za-z0-9_]+)+$/, '');
   
-  // Remove empty lines and excessive whitespace
-  cleaned = cleaned.replace(/\n\s*\n/g, '\n');
-  cleaned = cleaned.replace(/^\s+|\s+$/gm, '');
-  cleaned = cleaned.replace(/\s+/g, ' ');
+  // Preserve line structure for structural pattern detection.
+  // Only normalize spaces/tabs, not all whitespace.
+  cleaned = cleaned.replace(/\r\n/g, '\n');
+  cleaned = cleaned.replace(/[ \t]+\n/g, '\n');
+  cleaned = cleaned.replace(/\n[ \t]+/g, '\n');
+  cleaned = cleaned.replace(/[ \t]{2,}/g, ' ');
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  cleaned = cleaned.replace(/^[ \t]+|[ \t]+$/gm, '');
   cleaned = cleaned.trim();
   
   return cleaned;
@@ -99,23 +139,103 @@ function clearAllHighlights() {
 }
 
 /**
+ * Check if an element is a LinkedIn comment (not main post)
+ */
+function isComment(element) {
+  // LinkedIn feed uses `feed-commentary` for main post text.
+  // Only explicit comment contexts should be excluded.
+  const viewNode = element.closest?.('[data-view-name]');
+  const viewName = viewNode?.getAttribute('data-view-name')?.toLowerCase() || '';
+  if (viewName === 'feed-commentary') {
+    return false;
+  }
+  if (viewName === 'comment-commentary' || viewName.startsWith('comments-')) {
+    return true;
+  }
+
+  // Check if element or any ancestor has comment indicators
+  for (const selector of COMMENT_SELECTORS) {
+    if (element.closest(selector)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if element is likely UI/chrome text rather than post body
+ */
+function isLikelyUiText(element) {
+  const text = (element.innerText || '').trim();
+  if (!text) return true;
+  if (text.length < 50) return true;
+
+  const uiOnly = [
+    'Like',
+    'Comment',
+    'Share',
+    'Send',
+    'Repost',
+    'Follow',
+    'Promoted',
+    'Sponsored',
+  ];
+
+  return uiOnly.includes(text);
+}
+
+/**
+ * Fallback: within a feed card/article, find the best candidate text block
+ */
+function findPrimaryTextInContainer(container) {
+  // Try strict selectors first, scoped to the container.
+  for (const selector of MAIN_POST_SELECTORS) {
+    const el = container.querySelector(selector);
+    if (!el) continue;
+    if (isComment(el)) continue;
+    if (isLikelyUiText(el)) continue;
+    return el;
+  }
+
+  // Generic fallback for evolving LinkedIn markup:
+  // pick the longest non-comment text block inside the container.
+  const genericCandidates = container.querySelectorAll('div, span, p');
+  let best = null;
+  let bestLen = 0;
+
+  genericCandidates.forEach((el) => {
+    if (isComment(el)) return;
+    if (el.closest('button, nav, footer, aside')) return;
+    const text = (el.innerText || '').trim();
+    if (text.length < 80) return;
+    if (isLikelyUiText(el)) return;
+    if (text.length > bestLen) {
+      best = el;
+      bestLen = text.length;
+    }
+  });
+
+  return best;
+}
+
+/**
  * Process a post container
  */
 function processPost(post) {
   // Skip if already processed
   if (post.hasAttribute('data-slop-processed')) {
-    return;
+    return { status: 'already' };
   }
   
   // Skip if this is a comment (we only want to analyze main posts)
-  const commentParent = post.closest(
-    '.feed-shared-comment, .comments-comment-item, .comment-content, ' +
-    '.feed-shared-comments, .social-details-article, .comments-list, ' +
-    '.feed-shared-update-v2__commentary'
-  );
-  if (commentParent) {
+  // Use stable data attributes - comments have data-view-name="comment-commentary"
+  if (isComment(post)) {
+    if (CONFIG.debugMode) {
+      console.log('⏭️ Skipped (comment detected)');
+    }
     post.setAttribute('data-slop-processed', 'true');
-    return;
+    return { status: 'comment' };
   }
   
   post.setAttribute('data-slop-processed', 'true');
@@ -129,7 +249,7 @@ function processPost(post) {
   const cleanedLength = text.length;
   
   if (text.length < 50) {
-    return; // Too short to be slop
+    return { status: 'short' }; // Too short to be slop
   }
   
   const analysis = AISlopDetector.analyzeText(text);
@@ -148,7 +268,10 @@ function processPost(post) {
   
   if (analysis.score >= CONFIG.slopThreshold) {
     highlightSlop(post, analysis);
+    return { status: 'highlighted', analysis };
   }
+
+  return { status: 'analyzed', analysis };
 }
 
 /**
@@ -206,20 +329,22 @@ function processLinkedInPosts() {
   }
   
   // LinkedIn post selectors - ORDER MATTERS!
-  // Text-only selectors FIRST to avoid analyzing headers, buttons, UI
-  const postSelectors = [
-    '.feed-shared-update-v2__description',  // Post text content - check FIRST
-    '.feed-shared-text',  // Text elements
-    '.feed-shared-inline-show-more-text',  // Individual post pages
-    'article .update-components-text',  // Component text
-    '.break-words',  // Break word elements
-    '[data-test-id="main-feed-activity-card__commentary"]',
-    '.feed-shared-update-v2',  // FULL container - check LAST (fallback)
-    'article',  // Article tags - LAST (fallback)
-  ];
+  // Keep selectors narrow to main-post text to avoid comment blocks.
+  const postSelectors = MAIN_POST_SELECTORS;
   
-  let totalProcessed = 0;
-  let newlyProcessed = 0;
+  if (CONFIG.debugMode) {
+    console.log('🔎 Checking which selectors match:');
+    postSelectors.forEach(selector => {
+      const count = document.querySelectorAll(selector).length;
+      console.log(`  ${selector}: ${count} elements`);
+    });
+  }
+  
+  let totalCandidates = 0;
+  let analyzedPosts = 0;
+  let highlightedPosts = 0;
+  let skippedComment = 0;
+  let skippedShort = 0;
   
   postSelectors.forEach(selector => {
     const posts = document.querySelectorAll(selector);
@@ -238,16 +363,60 @@ function processLinkedInPosts() {
         return;
       }
       
-      processPost(post);
-      totalProcessed++;
-      newlyProcessed++;
+      totalCandidates++;
+      const beforeProcess = post.innerText?.substring(0, 80);
+      const result = processPost(post);
+      
+      if (result?.status === 'comment') {
+        skippedComment++;
+      } else if (result?.status === 'short') {
+        skippedShort++;
+        if (CONFIG.debugMode) {
+          console.log(`⏭️ Skipped (too short): "${beforeProcess}..."`);
+        }
+      } else if (result?.status === 'analyzed') {
+        analyzedPosts++;
+      } else if (result?.status === 'highlighted') {
+        analyzedPosts++;
+        highlightedPosts++;
+      }
     });
   });
+
+  // Feed fallback: if strict selectors miss the current LinkedIn DOM,
+  // scan feed/article containers and infer main post text from within.
+  if (totalCandidates === 0) {
+    if (CONFIG.debugMode) {
+      console.log('🧭 No direct selector matches; trying feed container fallback');
+    }
+
+    FEED_CONTAINER_SELECTORS.forEach((selector) => {
+      const containers = document.querySelectorAll(selector);
+      containers.forEach((container) => {
+        const candidate = findPrimaryTextInContainer(container);
+        if (!candidate) return;
+        if (candidate.hasAttribute('data-slop-processed')) return;
+
+        totalCandidates++;
+        const result = processPost(candidate);
+        if (result?.status === 'comment') {
+          skippedComment++;
+        } else if (result?.status === 'short') {
+          skippedShort++;
+        } else if (result?.status === 'analyzed') {
+          analyzedPosts++;
+        } else if (result?.status === 'highlighted') {
+          analyzedPosts++;
+          highlightedPosts++;
+        }
+      });
+    });
+  }
   
   if (CONFIG.debugMode) {
-    if (newlyProcessed > 0) {
-      console.log(`📝 Found ${totalProcessed} potential posts, processed ${newlyProcessed} new ones`);
-    }
+    console.log(`📊 Summary: ${totalCandidates} candidates, ${analyzedPosts} analyzed, ${highlightedPosts} highlighted, ${skippedComment} comments skipped, ${skippedShort} too short`);
+    const highlightedCount = document.querySelectorAll('.ai-slop-highlighted').length;
+    console.log(`🎨 Total highlighted: ${highlightedCount}`);
   }
 }
 

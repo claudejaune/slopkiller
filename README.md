@@ -2,7 +2,6 @@
 
 A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 
-Currently, as proof of concept/MVP, it only reliably detects slop on the actual post page. Fool-proof slop detection in the main feed is being worked upon as we speak.
 
 ## Features
 
@@ -80,7 +79,7 @@ ai-slop-detector/
 ## Usage
 
 1. Navigate to LinkedIn
-2. The extension will automatically scan posts (currently, it only reliably detects slop on post page, in-feed detection WIP)
+2. The extension will automatically scan posts 
 3. Click the extension icon to:
    - Enable/disable detection
    - Adjust sensitivity threshold (10-100)
@@ -148,7 +147,6 @@ Sometimes performance doesn't need more pressure.
 - [ ] Support for Twitter/X
 - [ ] Machine learning model for better detection
 - [ ] Whitelist specific authors
-- [ ] Dark mode for popup
 - [ ] Browser action badge showing slop count
 
 ## Contributing
