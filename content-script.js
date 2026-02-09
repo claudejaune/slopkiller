@@ -7,7 +7,7 @@
 const CONFIG = {
   slopThreshold: 30, // Score threshold for detection
   enabled: true,
-  debugMode: true, // Log detection info to console (enabled by default)
+  debugMode: false, // Log detection info to console
   settingsLoaded: false, // Track when settings are loaded
 };
 
@@ -42,6 +42,17 @@ const FEED_CONTAINER_SELECTORS = [
   '.feed-shared-update-v2',
   'article',
 ];
+
+const UI_ONLY_TEXTS = new Set([
+  'Like',
+  'Comment',
+  'Share',
+  'Send',
+  'Repost',
+  'Follow',
+  'Promoted',
+  'Sponsored',
+]);
 
 // Load settings from Chrome storage
 chrome.storage.sync.get(['enabled', 'threshold'], (result) => {
@@ -170,19 +181,7 @@ function isLikelyUiText(element) {
   const text = (element.innerText || '').trim();
   if (!text) return true;
   if (text.length < 50) return true;
-
-  const uiOnly = [
-    'Like',
-    'Comment',
-    'Share',
-    'Send',
-    'Repost',
-    'Follow',
-    'Promoted',
-    'Sponsored',
-  ];
-
-  return uiOnly.includes(text);
+  return UI_ONLY_TEXTS.has(text);
 }
 
 /**
@@ -358,13 +357,10 @@ function processLinkedInPosts() {
       // Check if this element is contained within an already-processed post
       const processedAncestor = post.closest('[data-slop-processed="true"]');
       if (processedAncestor) {
-        // Mark as processed to avoid duplicate work
-        post.setAttribute('data-slop-processed', 'true');
         return;
       }
       
       totalCandidates++;
-      const beforeProcess = post.innerText?.substring(0, 80);
       const result = processPost(post);
       
       if (result?.status === 'comment') {
@@ -372,6 +368,7 @@ function processLinkedInPosts() {
       } else if (result?.status === 'short') {
         skippedShort++;
         if (CONFIG.debugMode) {
+          const beforeProcess = post.innerText?.substring(0, 80);
           console.log(`⏭️ Skipped (too short): "${beforeProcess}..."`);
         }
       } else if (result?.status === 'analyzed') {

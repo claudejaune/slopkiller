@@ -9,6 +9,7 @@ const thresholdValue = document.getElementById('thresholdValue');
 const confidenceLabel = document.getElementById('confidenceLabel');
 const highlightedCount = document.getElementById('highlightedCount');
 const refreshButton = document.getElementById('refresh');
+let saveTimeout = null;
 
 // Load saved settings
 chrome.storage.sync.get(['enabled', 'threshold'], (result) => {
@@ -72,6 +73,11 @@ function saveSettings() {
   });
 }
 
+function scheduleSaveSettings(delay = 200) {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveSettings, delay);
+}
+
 // Get stats from content script
 function updateStats() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -94,8 +100,9 @@ function updateStats() {
 enabledCheckbox.addEventListener('change', saveSettings);
 thresholdSlider.addEventListener('input', () => {
   updateThresholdDisplay();
-  saveSettings();
+  scheduleSaveSettings();
 });
+thresholdSlider.addEventListener('change', saveSettings);
 
 refreshButton.addEventListener('click', () => {
   console.log('🔄 Refreshing detection...');
@@ -103,4 +110,4 @@ refreshButton.addEventListener('click', () => {
 });
 
 // Update stats periodically
-setInterval(updateStats, 2000);
+setInterval(updateStats, 5000);
