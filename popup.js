@@ -8,7 +8,7 @@ const thresholdSlider = document.getElementById('threshold');
 const thresholdValue = document.getElementById('thresholdValue');
 const confidenceLabel = document.getElementById('confidenceLabel');
 const highlightedCount = document.getElementById('highlightedCount');
-const refreshButton = document.getElementById('refresh');
+const openTestPageButton = document.getElementById('openTestPage');
 let saveTimeout = null;
 
 // Load saved settings
@@ -104,9 +104,8 @@ thresholdSlider.addEventListener('input', () => {
 });
 thresholdSlider.addEventListener('change', saveSettings);
 
-refreshButton.addEventListener('click', () => {
-  console.log('🔄 Refreshing detection...');
-  saveSettings(); // This triggers re-detection
+openTestPageButton.addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('test-page.html') });
 });
 
 // Update stats periodically

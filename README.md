@@ -16,6 +16,7 @@ A Chrome / Brave / Edge extension that highlights AI-generated "slop" content on
 - **Score Badge**: Shows the slop score on detected posts
 - **Adjustable Sensitivity**: Set your own threshold for detection
 - **Real-time Stats**: See how many posts have been highlighted on current page
+- **Manual Test Page Shortcut**: Open the built-in text scorer directly from the popup
 
 ## Detected Patterns
 
@@ -76,6 +77,7 @@ Common telltale signs of AI slop. See [PATTERN_GUIDE.md](PATTERN_GUIDE.md) for i
    - Enable/disable detection
    - Adjust sensitivity threshold (10-100)
    - View stats for current page
+   - Open **Manual Test Page** to paste any text and check its slop score
 
    <img src="https://github.com/user-attachments/assets/c8faa132-80a3-4dc4-8cc8-975bb30ccbe3" width="70%" alt="image" />
 
