@@ -2,7 +2,10 @@
 
 A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 
-<img width="1446" height="898" alt="image" src="https://github.com/user-attachments/assets/6028e3b9-056a-48fd-8c67-b74cbc81ace3" />
+<img src="https://github.com/user-attachments/assets/6028e3b9-056a-48fd-8c67-b74cbc81ace3" width="70%" alt="image" />
+
+<img src="https://github.com/user-attachments/assets/c8faa132-80a3-4dc4-8cc8-975bb30ccbe3" width="70%" alt="image" />
+
 
 ## Features
 
@@ -59,9 +62,11 @@ Common telltale signs of AI slop. See [PATTERN_GUIDE.md](PATTERN_GUIDE.md) for i
 1. Download the code / clone the repo
 2. Open Chrome and go to `chrome://extensions/`
 4. Enable "Developer mode" (top right)
-   <img width="1421" height="836" alt="image" src="https://github.com/user-attachments/assets/cf29f2fb-202a-4fae-b039-85c80acf3a9f" />
-5. Click "Load unpacked" on the top-left
-6. Select the folder containing the extension files
+
+   <img src="https://github.com/user-attachments/assets/cf29f2fb-202a-4fae-b039-85c80acf3a9f" width="70%" alt="image" />
+   
+6. Click "Load unpacked" on the top-left
+7. Select the folder containing the extension files
 
 ## Usage
 
@@ -71,7 +76,8 @@ Common telltale signs of AI slop. See [PATTERN_GUIDE.md](PATTERN_GUIDE.md) for i
    - Enable/disable detection
    - Adjust sensitivity threshold (10-100)
    - View stats for current page
-<img width="1087" height="823" alt="image" src="https://github.com/user-attachments/assets/16490f08-56c1-4dc9-a479-1895e320c998" />
+
+   <img src="https://github.com/user-attachments/assets/c8faa132-80a3-4dc4-8cc8-975bb30ccbe3" width="70%" alt="image" />
 
 ### Sensitivity Guide
 
