@@ -2,7 +2,7 @@
 
 ## How to Add New AI Slop Patterns
 
-This guide explains how to add new detection patterns to the AI Slop Detector.
+This guide explains how to add new detection patterns to the LinkedIn AI Slop Detector.
 
 ## Pattern Structure
 

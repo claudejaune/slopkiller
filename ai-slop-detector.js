@@ -1,5 +1,5 @@
 /**
- * AI Slop Detector
+ * LinkedIn AI Slop Detector
  * Detects AI-generated LinkedIn-style content patterns
  */
 

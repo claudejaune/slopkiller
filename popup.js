@@ -1,5 +1,5 @@
 /**
- * Popup script for AI Slop Detector
+ * Popup script for LinkedIn AI Slop Detector
  */
 
 // DOM elements

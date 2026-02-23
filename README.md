@@ -1,6 +1,6 @@
 # LinkedIn AI Slop Detector
 
-A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
+A Chrome / Brave / Edge extension that highlights AI-generated "slop" content on LinkedIn.
 
    <img src="https://github.com/user-attachments/assets/6028e3b9-056a-48fd-8c67-b74cbc81ace3" width="80%" alt="image" />
 

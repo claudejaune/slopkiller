@@ -1,5 +1,5 @@
 /**
- * Content Script for AI Slop Detector Chrome Extension
+ * Content Script for LinkedIn AI Slop Detector Chrome Extension
  * Runs on LinkedIn pages to detect and replace AI slop
  */
 
@@ -298,7 +298,7 @@ function highlightSlop(element, analysis) {
   // Add badge showing score
   const badge = document.createElement('span');
   badge.className = 'ai-slop-badge';
-  badge.textContent = `🤖 AI Slop Detected (Score: ${analysis.score})`;
+  badge.textContent = `🤖 LinkedIn AI Slop Detected (Score: ${analysis.score})`;
   badge.style.cssText = `
     display: inline-block;
     background: #f44336;
@@ -421,7 +421,7 @@ function processLinkedInPosts() {
  * Initialize and set up observer for dynamic content
  */
 function initialize() {
-  console.log('🚀 AI Slop Detector initializing...');
+  console.log('🚀 LinkedIn AI Slop Detector initializing...');
   
   // Initial processing
   processLinkedInPosts();
@@ -454,7 +454,7 @@ function initialize() {
   // Log stats
   const highlightedCount = document.querySelectorAll('.ai-slop-highlighted').length;
   console.log('🎨 Total highlighted posts:', highlightedCount);
-  console.log('AI Slop Detector initialized');
+  console.log('LinkedIn AI Slop Detector initialized');
 }
 
 // Listen for messages from popup

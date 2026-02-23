@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Slop Detector",
+  "name": "LinkedIn AI Slop Detector",
   "version": "1.0.0",
   "description": "Highlights AI-generated content on LinkedIn to help identify potential AI slop",
   "permissions": [

@@ -1,5 +1,5 @@
 /**
- * Test Suite for AI Slop Detector
+ * Test Suite for LinkedIn AI Slop Detector
  * Run in Node.js or browser console
  */
 
