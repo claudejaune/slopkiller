@@ -4,9 +4,6 @@ A Chrome extension that highlights AI-generated "slop" content on LinkedIn.
 
 <img width="1446" height="898" alt="image" src="https://github.com/user-attachments/assets/6028e3b9-056a-48fd-8c67-b74cbc81ace3" />
 
-<img width="1087" height="823" alt="image" src="https://github.com/user-attachments/assets/16490f08-56c1-4dc9-a479-1895e320c998" />
-
-
 ## Features
 
 - **Pattern Detection**: Uses 18+ regex patterns to detect common AI-generated writing structures
