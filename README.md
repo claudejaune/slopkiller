@@ -60,14 +60,31 @@ Common telltale signs of AI slop. See [PATTERN_GUIDE.md](PATTERN_GUIDE.md) for i
 
 ## Installation
 
-1. Download the code / clone the repo
-2. Open Chrome and go to `chrome://extensions/`
+### For Users (GitHub Release zip)
+
+1. Download the latest release zip from the [releases page](https://github.com/claudejaune/slopkiller/releases): `linkedin-slop-detector-x.x.x.zip`
+2. Unzip it 
+3. Open Chrome and go to `chrome://extensions/`
 4. Enable "Developer mode" (top right)
 
    <img src="https://github.com/user-attachments/assets/cf29f2fb-202a-4fae-b039-85c80acf3a9f" width="80%" alt="image" />
-   
-6. Click "Load unpacked" on the top-left
-7. Select the folder containing the extension files
+
+5. Click "Load unpacked" on the top-left
+6. Select the unzipped `extension` folder
+
+### For Developers (build unpacked folder locally)
+
+1. Clone the repo
+2. Generate unpacked extension files:
+
+   ```bash
+   ./scripts/prepare-unpacked.sh
+   ```
+
+3. In `chrome://extensions`, click "Load unpacked"
+4. Select `dist/extension`
+
+Re-run `./scripts/prepare-unpacked.sh` after source changes to refresh `dist/extension`.
 
 ## Usage
 

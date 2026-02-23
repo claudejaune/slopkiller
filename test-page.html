@@ -145,7 +145,7 @@
   <div class="test-input">
     <h2>Test Your Own Text</h2>
     <textarea id="testText" placeholder="Paste LinkedIn post text here to check for AI slop patterns..."></textarea>
-    <button onclick="analyzeText()">Analyze Text</button>
+    <button id="analyzeButton">Analyze Text</button>
   </div>
   
   <div id="results" class="results" style="display: none;">
@@ -175,7 +175,7 @@
   <div class="example-posts">
     <h2>Example Posts (Click to Test)</h2>
     
-    <div class="post" onclick="testExample(this)">
+    <div class="post">
       <div class="post-header">EXAMPLE 1: High Slop Score (~60 points)</div>
       Just wrapped up interviews for a cybersecurity role.
 
@@ -196,7 +196,7 @@ The industry doesn't need more tool operators.
 It needs more problem solvers.
     </div>
     
-    <div class="post" onclick="testExample(this)">
+    <div class="post">
       <div class="post-header">EXAMPLE 2: Very High Slop Score (~80 points)</div>
       I scheduled a 1:1.
 
@@ -220,7 +220,7 @@ Sometimes performance doesn't need more pressure.
 It needs trust.
     </div>
     
-    <div class="post" onclick="testExample(this)">
+    <div class="post">
       <div class="post-header">EXAMPLE 3: Moderate Slop Score (~40 points)</div>
       On paper, it may sound perfect. But in reality, it's an operational challenge.
 
@@ -233,14 +233,14 @@ So, we can't just pitch the idea, we had to design the execution roadmap.
 Want to learn more? Like this post and comment "INTERESTED" 👇
     </div>
     
-    <div class="post" onclick="testExample(this)">
+    <div class="post">
       <div class="post-header">EXAMPLE 4: Low/Zero Score (Normal Human Post)</div>
       Had a productive meeting with the team today. We discussed the Q4 roadmap and identified some key priorities for the next sprint. Looking forward to shipping these features next month.
 
 Thanks to everyone who contributed ideas during the brainstorming session. The collaboration was excellent.
     </div>
     
-    <div class="post" onclick="testExample(this)">
+    <div class="post">
       <div class="post-header">EXAMPLE 5: Medium Slop Score (~35 points)</div>
       What if local shopkeepers were the answer to India's logistics puzzle?
 
@@ -258,97 +258,6 @@ If you're building in logistics, remember this: innovation doesn't need complexi
   </div>
   
   <script src="ai-slop-detector.js"></script>
-  <script>
-    function analyzeText() {
-      const text = document.getElementById('testText').value;
-      
-      if (!text.trim()) {
-        alert('Please enter some text to analyze');
-        return;
-      }
-      
-      displayResults(text);
-    }
-    
-    function testExample(element) {
-      const text = element.innerText.split('\n').slice(1).join('\n'); // Remove header
-      document.getElementById('testText').value = text;
-      displayResults(text);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    function displayResults(text) {
-      const analysis = AISlopDetector.analyzeText(text);
-      const confidence = AISlopDetector.getConfidenceLevel(analysis.score);
-      const isSlop = AISlopDetector.isSlop(text, 30);
-      
-      // Show results
-      document.getElementById('results').style.display = 'block';
-      document.getElementById('scoreValue').textContent = analysis.score;
-      
-      // Update confidence badge
-      const badge = document.getElementById('confidenceBadge');
-      badge.textContent = confidence;
-      badge.className = 'confidence ' + confidence.toLowerCase().replace(' ', '-');
-      
-      // Verdict
-      const verdict = document.getElementById('verdict');
-      if (isSlop) {
-        verdict.textContent = '🚨 AI SLOP DETECTED!';
-        verdict.style.color = '#f44336';
-      } else {
-        verdict.textContent = '✅ Looks human to me!';
-        verdict.style.color = '#4caf50';
-      }
-      
-      // Display patterns
-      const patternsList = document.getElementById('patternsList');
-      patternsList.innerHTML = '';
-      if (Object.keys(analysis.patterns).length > 0) {
-        for (const [name, count] of Object.entries(analysis.patterns)) {
-          if (count > 0) {
-            const div = document.createElement('div');
-            div.className = 'pattern-item';
-            div.innerHTML = `
-              <span>${name.replace(/([A-Z])/g, ' $1').trim()}</span>
-              <span class="badge">${count}x</span>
-            `;
-            patternsList.appendChild(div);
-          }
-        }
-      } else {
-        patternsList.innerHTML = '<em>None detected</em>';
-      }
-      
-      // Display emojis
-      const emojisList = document.getElementById('emojisList');
-      emojisList.innerHTML = '';
-      if (Object.keys(analysis.emojis).length > 0) {
-        for (const [name, count] of Object.entries(analysis.emojis)) {
-          if (count > 0) {
-            const div = document.createElement('div');
-            div.className = 'pattern-item';
-            div.innerHTML = `
-              <span>${name}</span>
-              <span class="badge">${count}x</span>
-            `;
-            emojisList.appendChild(div);
-          }
-        }
-      } else {
-        emojisList.innerHTML = '<em>None detected</em>';
-      }
-      
-      // Display buzzwords
-      const buzzwordsList = document.getElementById('buzzwordsList');
-      if (analysis.buzzwords.length > 0) {
-        buzzwordsList.innerHTML = analysis.buzzwords.map(w => 
-          `<span class="badge" style="margin: 2px;">${w}</span>`
-        ).join(' ');
-      } else {
-        buzzwordsList.innerHTML = '<em>None detected</em>';
-      }
-    }
-  </script>
+  <script src="test-page.js"></script>
 </body>
 </html>
